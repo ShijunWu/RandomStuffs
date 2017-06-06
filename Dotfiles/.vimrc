@@ -1,4 +1,4 @@
-" vim: set sw=4 ts=4 sts=4 et tw=78 foldmarker={,} foldlevel=0 foldmethod=marker spell:
+" vim: set sw=2 ts=2 sts=2 et tw=78 foldmarker={,} foldlevel=0 foldmethod=marker spell:
 
 " Load the plugins {
   if filereadable(expand("~/.vimrc.bundles"))
@@ -14,20 +14,37 @@
 " }
 
 " Key Mapping {
+  " Swap 0 and ^. I tend to want to jump to the first non-whitespace character
+  nnoremap 0 ^
+  nnoremap ^ 0
+
+  " Terminal sees <C-@> as <C-space>
+  " nnoremap <C-@> <Esc>:noh<CR>
+
   " Hightlight last inserted text, visually selects the block of characters
   " added last time in INSERT mode.
-  nnoremap gV `[v`]
+  " nnoremap gV `[v`]
 
   " Move vertically by visual line, j and k not skip the fake line if a long line
   " wrap into two lines.
   nnoremap j gj
   nnoremap k gk
 
-  " Easy movement in tabs and windows
-  map <C-J> <C-W>j<C-W>_
-  map <C-K> <C-W>k<C-W>_
-  map <C-L> <C-W>l<C-W>_
-  map <C-H> <C-W>h<C-W>_
+  " Quicker window movement
+  nnoremap <C-j> <C-w>j
+  nnoremap <C-k> <C-w>k
+  nnoremap <C-h> <C-w>h
+  nnoremap <C-l> <C-w>l
+  " nnoremap <C-;> :tabnext<CR>
+  " nnoremap <C-'> :tabprevious<CR>
+
+  " Alt + [h,j,k,l] to resize split window
+  if bufwinnr(1)
+    " nnoremap ˙ <C-w><
+    " nnoremap ∆ <C-w>-
+    " nnoremap ˚ <C-w>+
+    " nnoremap ¬ <C-w>>
+  endif
 
   " Yank from the cursor to the end of the line, to be consistent with C and D.
   nnoremap Y y$
@@ -37,19 +54,29 @@
   cmap cwd lcd %:p:h
   cmap cd. lcd %:p:h
 
+  " Easier horizontal scrolling
+  map zl zL
+  map zh zH
+
   " Visual shifting (Move text left and right without exiting Visual mode)
   vnoremap < <gv
   vnoremap > >gv
 
-  " Easier horizontal scrolling
-  map zl zL
-  map zh zH
+  " Insert mode
+  inoremap <C-e> <Esc>A
+  inoremap <C-a> <Esc>I
+  inoremap jj <ESC>
 " }
 
 " Leader Shortcuts {
   let mapleader=" "
   nnoremap <leader>l :call ToggleNumber()<CR>
   nnoremap <leader>/ :noh<CR>
+
+  " Search with Ag
+  nnoremap <leader>a :Ag!<Space>
+  nnoremap <leader>A :Ag!<Space><C-R><C-W><CR>
+  " :cw<CR>
 
   " Code folding options
   nmap <leader>f0 :set foldlevel=0<CR>
@@ -63,15 +90,22 @@
   nmap <leader>f8 :set foldlevel=8<CR>
   nmap <leader>f9 :set foldlevel=9<CR>
 
-  " Find merge conflict markers
-  map <leader>fc /\v^[<\|=>]{7}( .*\|$)<CR>
-
   " Edit file in the same directories as the current file
   cnoremap %% <C-R>=fnameescape(expand('%:h')).'/'<cr>
   map <leader>ew :e %%
   map <leader>es :sp %%
   map <leader>ev :vsp %%
   map <leader>et :tabe %%
+
+  " Go to window by number
+  let i = 1
+  while i <= 9
+    execute 'nnoremap <Leader>' . i . ' :' . i . 'wincmd w<CR>'
+    let i = i + 1
+  endwhile
+
+  noremap <leader>. :tabnext<CR>
+  noremap <leader>, :tabprevious<CR>
 
   " Map <Leader>ff to display all lines with keyword under cursor and ask which one to jump to
   nmap <Leader>ff [I:let nr = input("Which one: ")<Bar>exe "normal " . nr ."[\t"<CR>
@@ -110,14 +144,13 @@
   set list listchars=tab:»·,trail:·,nbsp:·  " display extra whitespace.
   set scrolloff=3   " Minimal number of screen lines to keep above and below the cursor.
 
-  " Searching {
-    set ignorecase      " ignore case when searching
-    set smartcase       " Override the 'ignorecase' option if the search pattern contains upper case characters.
-    set incsearch       " search as characters are entered
-    set hlsearch        " highlight all matches
-  " }
+  " Searching
+  set ignorecase      " ignore case when searching
+  set smartcase       " Override the 'ignorecase' option if the search pattern contains upper case characters.
+  set incsearch       " search as characters are entered
+  set hlsearch        " highlight all matches
 
-  set mouse=a                 " Automatically enable mouse usage
+  set mouse=v                 " Automatically enable mouse usage
   set mousehide               " Hide the mouse cursor while typing
 " }
 
@@ -143,6 +176,12 @@
                           " Useful to always start editing with all folds closed (value zero)
 " }
 
+" Spell {
+  " Autocomplete with dictionary words when spell check is on
+  set dictionary+=/usr/share/dict/words
+  set complete+=kspell
+" }
+
 " Custom Functions {
   function! ToggleNumber()
     if(&relativenumber == 1)
@@ -160,52 +199,47 @@
   set noswapfile
 " }
 
-augroup vimrcEx
-  autocmd!
+" When editing a file, always jump to the last known cursor position {
+  augroup vimrcEx
+    autocmd!
 
-  " When editing a file, always jump to the last known cursor position.
-  " Don't do it for commit messages, when the position is invalid, or when
-  " inside an event handler (happens when dropping a file on gvim).
-  autocmd BufReadPost *
-    \ if &ft != 'gitcommit' && line("'\"") > 0 && line("'\"") <= line("$") |
-    \   exe "normal g`\"" |
-    \ endif
+    " Don't do it for commit messages, when the position is invalid, or when
+    " inside an event handler (happens when dropping a file on gvim).
+    autocmd BufReadPost *
+      \ if &ft != 'gitcommit' && line("'\"") > 0 && line("'\"") <= line("$") |
+      \   exe "normal g`\"" |
+      \ endif
 
-  " Set syntax highlighting for specific file types
-  autocmd BufRead,BufNewFile Appraisals set filetype=ruby
-  autocmd BufRead,BufNewFile *.md set filetype=markdown
-  autocmd BufRead,BufNewFile .{jscs,jshint,eslint}rc set filetype=json
-augroup END
-
-
-" Switch syntax highlighting on, when the terminal has colors
-" Also switch on highlighting the last used search pattern.
-if (&t_Co > 2 || has("gui_running")) && !exists("syntax_on")
-  syntax on
-endif
-
+    " Set syntax highlighting for specific file types
+    autocmd BufRead,BufNewFile Appraisals set filetype=ruby
+    autocmd BufRead,BufNewFile *.md set filetype=markdown
+    autocmd BufRead,BufNewFile .{jscs,jshint,eslint}rc set filetype=json
+  augroup END
+" }
 
 " When the type of shell script is /bin/sh, assume a POSIX-compatible
-" shell for syntax highlighting purposes.
-let g:is_posix = 1
+" shell for syntax highlighting purposes {
+  let g:is_posix = 1
+" }
 
-" Tab completion
-" will insert tab at beginning of line,
-" will use completion if not at beginning
-function! InsertTabWrapper()
+" Tab completion {
+  " will insert tab at beginning of line,
+  " will use completion if not at beginning
+  function! InsertTabWrapper()
     let col = col('.') - 1
     if !col || getline('.')[col - 1] !~ '\k'
-        return "\<tab>"
+      return "\<tab>"
     else
-        return "\<c-p>"
+      return "\<c-p>"
     endif
-endfunction
-inoremap <Tab> <c-r>=InsertTabWrapper()<cr>
-inoremap <S-Tab> <c-n>
+  endfunction
+  inoremap <Tab> <c-r>=InsertTabWrapper()<cr>
+  inoremap <S-Tab> <c-n>
+" }
 
 " Plugin Config {
   " vim-multiple-cursors {
-    let g:multi_cursor_next_key='<C-m>'
+    " let g:multi_cursor_next_key='<C-n>'
     let g:multi_cursor_exit_from_visual_mode=0
     let g:multi_cursor_exit_from_insert_mode=0
   " }
@@ -216,25 +250,27 @@ inoremap <S-Tab> <c-n>
   " }
 
   " NERDTree {
-    map <C-n> :NERDTreeToggle<CR>
+    " map <C-n> :NERDTreeToggle<CR>
+    noremap <leader>n :NERDTreeToggle<CR>
+    noremap <leader>m :NERDTreeFind<CR>
     " Open NERDTree auto when vim starts up on opening a directly
     autocmd StdinReadPre * let s:std_in=1
     autocmd VimEnter * if argc() == 1 && isdirectory(argv()[0]) && !exists("s:std_in") | exe 'NERDTree' argv()[0] | wincmd p | ene | endif
   " }
 
-  " syntastic { 
-    " set statusline+=%#warningmsg#
-    " set statusline+=%{SyntasticStatuslineFlag()}
-    " set statusline+=%*
-    " let g:syntastic_shell = "/bin/sh"
+  " syntastic {
+    set statusline+=%#warningmsg#
+    set statusline+=%{SyntasticStatuslineFlag()}
+    set statusline+=%*
+
     let g:syntastic_always_populate_loc_list = 1
     " let g:syntastic_auto_loc_list = 1
-    let g:syntastic_check_on_open = 1
+    let g:syntastic_check_on_open = 0
     let g:syntastic_check_on_wq = 0
     let g:syntastic_ruby_checkers = ['rubocop', 'mri']
     let g:syntastic_javascript_checkers = ['jshint']
   " }
-  
+
   " NerdCommenter {
     " Add spaces after comment delimiters by default
     let g:NERDSpaceDelims = 1
@@ -257,5 +293,16 @@ inoremap <S-Tab> <c-n>
         nnoremap \ :Ag<SPACE>
       endif
     endif
+  " }
+
+  " fzf {
+    let g:fzf_files_options =
+      \ '--preview "(coderay {} || cat {}) 2> /dev/null | head -'.&lines.'"'
+    nnoremap <C-p> :Files<cr>
+    autocmd VimEnter * command! -bang -nargs=* Ag
+      \ call fzf#vim#ag(<q-args>,
+      \                 <bang>0 ? fzf#vim#with_preview('up:60%')
+      \                         : fzf#vim#with_preview('right:50%:hidden', '?'),
+      \                 <bang>0)
   " }
 " }
