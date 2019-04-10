@@ -152,12 +152,14 @@
 
   set mouse=v                 " Automatically enable mouse usage
   set mousehide               " Hide the mouse cursor while typing
+
+  highlight Visual cterm=bold ctermbg=DarkGrey ctermfg=NONE
 " }
 
 " Formatting {
-  set tabstop=2       " Number of spaces that a <Tab> in the file counts for.
-  set softtabstop=2   " Number of spaces that a <Tab> counts for while performing editing operations.
-  set shiftwidth=2    " Number of spaces to use for each step of (auto)indent.
+  set tabstop=4       " Number of spaces that a <Tab> in the file counts for.
+  set softtabstop=4   " Number of spaces that a <Tab> counts for while performing editing operations.
+  set shiftwidth=4    " Number of spaces to use for each step of (auto)indent.
   set shiftround      " Round indent to multiple of 'shiftwidth'.  Applies to > and < commands.
   set expandtab       " In Insert mode: Use the appropriate number of spaces to insert a <Tab>.
   set autoindent      " Copy indent from current line when starting a new line
@@ -190,6 +192,12 @@
     else
       set relativenumber
     endif
+  endfunc
+
+  function! ChangeTabSpace(size)
+    set shiftwidth=size
+    set tabstop=size
+    set softtabstop=size
   endfunc
 " }
 
@@ -259,16 +267,24 @@
   " }
 
   " syntastic {
-    set statusline+=%#warningmsg#
-    set statusline+=%{SyntasticStatuslineFlag()}
-    set statusline+=%*
+    " set statusline+=%#warningmsg#
+    " set statusline+=%{SyntasticStatuslineFlag()}
+    " set statusline+=%*
 
-    let g:syntastic_always_populate_loc_list = 1
-    " let g:syntastic_auto_loc_list = 1
-    let g:syntastic_check_on_open = 0
-    let g:syntastic_check_on_wq = 0
-    let g:syntastic_ruby_checkers = ['rubocop', 'mri']
-    let g:syntastic_javascript_checkers = ['jshint']
+    " let g:syntastic_always_populate_loc_list = 1
+    " " let g:syntastic_auto_loc_list = 1
+    " let g:syntastic_check_on_open = 0
+    " let g:syntastic_check_on_wq = 0
+    " let g:syntastic_ruby_checkers = ['rubocop', 'mri']
+    " let g:syntastic_javascript_checkers = ['eslint', 'jshint']
+  " }
+
+  " ale {
+    let g:airline#extensions#ale#enabled = 1
+    " highlight ALEError ctermbg=none cterm=bold,undercurl
+    highlight ALEWarning ctermbg=none cterm=bold,undercurl
+    " let g:ale_lint_delay = 2000
+    let g:ale_lint_on_text_changed = "never"
   " }
 
   " NerdCommenter {

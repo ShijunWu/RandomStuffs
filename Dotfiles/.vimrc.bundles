@@ -3,7 +3,8 @@ call plug#begin('~/.vim/plugged')
 
 " Make sure you use single quotes
 Plug 'scrooloose/nerdtree'
-Plug 'scrooloose/syntastic'
+" Plug 'scrooloose/syntastic'
+Plug 'w0rp/ale'
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-surround'
 " Plug 'kien/ctrlp.vim'
@@ -17,7 +18,10 @@ Plug 'airblade/vim-gitgutter'
 Plug 'terryma/vim-multiple-cursors'
 Plug 'rking/ag.vim'
 Plug 'tomasr/molokai'
-Plug 'valloric/youcompleteme'
+" Plug 'valloric/youcompleteme'
+Plug 'vim-ruby/vim-ruby'
+Plug 'tpope/vim-rails'
+Plug 'fatih/vim-go'
 
 " Initialize plugin system
 call plug#end()
